@@ -1,0 +1,25 @@
+
+in vec2 vertPosition;
+in vec2 vertTexCoord;
+
+out vec2 fragTexCoord;
+out vec2 fragScreenPosition;
+
+layout (std140) uniform genericData {
+	mat4 projMatrix;
+
+	bool textured;
+	int baseMapIndex;
+
+	float alpha;
+};
+
+void main()
+{
+	fragTexCoord = vertTexCoord;
+
+	vec4 position = vec4(vertPosition, 0.0, 1.0);
+
+	fragScreenPosition = position.xy;
+	gl_Position = projMatrix * position;
+}

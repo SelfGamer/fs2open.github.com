@@ -148,6 +148,9 @@ static opengl_shader_type_t GL_shader_types[] = {
 	{ SDR_TYPE_ROCKET_UI, "rocketui-v.sdr",	"rocketui-f.sdr", nullptr,
 		{ opengl_vert_attrib::POSITION, opengl_vert_attrib::COLOR, opengl_vert_attrib::TEXCOORD }, "libRocket UI", false },
 
+	{ SDR_TYPE_DEPTH_MARKED, "depth-marked-v.sdr", "depth-marked-f.sdr", nullptr,
+		{ opengl_vert_attrib::POSITION, opengl_vert_attrib::TEXCOORD }, "Depth Marked Images", false },
+
 	{ SDR_TYPE_POST_PROCESS_SMAA_EDGE, "smaa-edge-v.sdr", "smaa-edge-f.sdr", nullptr,
 		{ opengl_vert_attrib::POSITION, opengl_vert_attrib::TEXCOORD }, "SMAA Edge detection", false },
 
@@ -207,7 +210,7 @@ static opengl_shader_variant_t GL_shader_variants[] = {
 
 	{SDR_TYPE_MODEL, true, SDR_FLAG_MODEL_THICK_OUTLINES, "FLAG_THICK_OUTLINE", {}, "Thick outlines"},
 
-	{SDR_TYPE_MODEL, false, SDR_FLAG_MODEL_ALPHA_MULT, "FLAG_ALPHA_MULT", {}, "Alpha multiplier"},
+	{SDR_TYPE_MODEL, false, SDR_FLAG_MODEL_ALPHA_MULT, "FLAG_ALPHA_MULT", {}, "Intermediate step for model alpha rendering"},
 
 	{SDR_TYPE_EFFECT_PARTICLE,
 	 true,

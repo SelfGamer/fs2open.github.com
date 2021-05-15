@@ -129,6 +129,8 @@ typedef struct mission {
 	int		ambient_light_level;
 	float	neb_far_multi;
 	float	neb_near_multi;
+	float   fadeout_far;
+	float   fadeout_near;
 	sound_env	sound_environment;
 
 	// Goober5000
@@ -182,6 +184,8 @@ typedef struct mission {
 		briefing_music_name[ 0 ] = '\0';
 		substitute_event_music_name[ 0 ] = '\0';
 		substitute_briefing_music_name[ 0 ] = '\0';
+		fadeout_far = INFINITY;
+		fadeout_near = INFINITY;
 		ai_profile = NULL;
 		cutscenes.clear( );
 	}

@@ -1105,6 +1105,30 @@ void opengl_tnl_set_rocketui_material(interface_material* material_info)
 		});
 }
 
+void opengl_tnl_set_depthmarked_material(depth_marked_image_material* material_info)
+{
+	opengl_tnl_set_material(material_info, false);
+
+	uint32_t baseMapIndex = 0;
+	if (material_info->is_textured()) {
+		float u_scale, v_scale;
+		if (!gr_opengl_tcache_set(material_info->get_texture_map(TM_BASE_TYPE), material_info->get_texture_type(),
+			&u_scale, &v_scale, &baseMapIndex)) {
+			mprintf(("WARNING: Error setting bitmap texture (%i)!\n", material_info->get_texture_map(TM_BASE_TYPE)));
+		}
+	}
+
+	opengl_set_generic_uniform_data<graphics::generic_data::depthmarked_data>(
+		[&](graphics::generic_data::depthmarked_data* data) {
+			data->projMatrix = gr_projection_matrix;
+
+			data->textured = material_info->is_textured() ? GL_TRUE : GL_FALSE;
+			data->baseMapIndex = baseMapIndex;
+
+			data->alpha = material_info->get_alpha();
+		});
+}
+
 void gr_opengl_set_viewport(int x, int y, int width, int height) {
 	glViewport(x, y, width, height);
 }

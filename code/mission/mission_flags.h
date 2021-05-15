@@ -33,6 +33,7 @@ namespace Mission {
 		End_to_mainhall,			// Return to the mainhall after debrief - niffiwan
 		Override_hashcommand,		// Override #Command with the Command info in Mission Specs - Goober5000
 		Player_start_chase_view,	// Player starts mission in chase view - Goober5000
+		Fadeout_ships,				// Fadeout ships into skybox - Lafiel
 		
 		NUM_VALUES
 	};

@@ -109,6 +109,12 @@ void gr_opengl_render_rocket_primitives(interface_material* material_info,
 	int n_indices,
 	gr_buffer_handle vertex_buffer,
 	gr_buffer_handle index_buffer);
+void gr_opengl_render_depthmarked_primitives(depth_marked_image_material* material_info,
+	primitive_type prim_type,
+	vertex_layout* layout,
+	int n_indices,
+	gr_buffer_handle vertex_buffer,
+	gr_buffer_handle index_buffer);
 
 void opengl_draw_textured_quad(GLfloat x1,
 	GLfloat y1,

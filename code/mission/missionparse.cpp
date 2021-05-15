@@ -535,6 +535,13 @@ void parse_mission_info(mission *pm, bool basic = false)
 		stuff_float(&Neb2_fog_far_mult);
 	}
 
+	// Lafiel - Fade models into skybox
+	if(optional_string("+Fadeout Models:")){
+		stuff_float(&pm->fadeout_near);
+		stuff_float(&pm->fadeout_far);
+		pm->flags.set(Mission::Mission_Flags::Fadeout_ships);
+	}
+
 	// Goober5000 - ship contrail speed threshold
 	pm->contrail_threshold = CONTRAIL_THRESHOLD_DEFAULT;
 	if (optional_string("$Contrail Speed Threshold:")){

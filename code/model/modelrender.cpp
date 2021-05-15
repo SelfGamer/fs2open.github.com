@@ -17,6 +17,7 @@
 #include "graphics/shadows.h"
 #include "graphics/tmapper.h"
 #include "graphics/uniforms.h"
+#include "graphics/2d.h"
 #include "io/timer.h"
 #include "jumpnode/jumpnode.h"
 #include "math/staticrand.h"
@@ -640,8 +641,87 @@ void model_draw_list::render_all(gr_zbuffer_type depth_mode)
 	for ( size_t i = 0; i < Render_keys.size(); ++i ) {
 		int render_index = Render_keys[i];
 
-		if ( depth_mode == ZBUFFER_TYPE_DEFAULT || Render_elements[render_index].render_material.get_depth_mode() == depth_mode ) {
-			render_buffer(Render_elements[render_index]);
+		//Render elements of current ZBUFFER type, unless they are alpha mult, then render during ZBUFFER_TYPE_READ (aka transparent) stage
+		if ( depth_mode == ZBUFFER_TYPE_DEFAULT
+			|| (Render_elements[render_index].render_material.is_alpha_mult_active() && depth_mode == ZBUFFER_TYPE_READ)
+			|| (!Render_elements[render_index].render_material.is_alpha_mult_active() && Render_elements[render_index].render_material.get_depth_mode() == depth_mode) ) {
+			if (!Render_elements[render_index].render_material.is_alpha_mult_active()) {
+				render_buffer(Render_elements[render_index]);
+			}
+			else {
+				static int transparency_target_buffer = bm_make_render_target(gr_screen.max_w, gr_screen.max_h, BMP_FLAG_RENDER_TARGET_DYNAMIC);
+				static auto vertex_stream_buffer = gr_create_buffer(BufferType::Vertex, BufferUsageHint::Dynamic);
+				static auto index_stream_buffer = gr_create_buffer(BufferType::Index, BufferUsageHint::Dynamic);
+
+				vertex_layout vert_def;
+
+				vert_def.add_vertex_component(vertex_format_data::POSITION2, sizeof(vertex), offsetof(vertex, world));
+				vert_def.add_vertex_component(vertex_format_data::TEX_COORD2, sizeof(vertex), offsetof(vertex, texture_position));
+
+				Assertion(transparency_target_buffer > 0, "Could not initialize a temporary render buffer for transparent model rendering");
+
+				float targetAlpha = Render_elements[render_index].render_material.get_alpha_mult();
+
+				//Switch to temp buffer
+				/*bm_set_render_target(transparency_target_buffer, 0);
+
+				//Clear our temp buffer to render to
+				gr_set_clear_color(0, 0, 0);
+				gr_screen.current_clear_color.alpha = 0;
+				gr_clear();
+
+				render_buffer(Render_elements[render_index]);
+
+				//Switch back
+				bm_set_render_target(-1);*/
+
+				//Render Result to screen
+				depth_marked_image_material mat;
+				mat.set_texture_map(TM_BASE_TYPE, transparency_target_buffer);
+				mat.set_texture_type(material::TEX_TYPE_NORMAL);
+				mat.set_alpha(targetAlpha);
+				
+				mat.set_blend_mode(ALPHA_BLEND_NONE);
+				
+				mat.set_depth_mode(ZBUFFER_TYPE_NONE);
+				mat.set_cull_mode(false);
+
+				auto vert_list = new vertex[4];
+				
+				vertex* V = &vert_list[0];
+				V->screen.xyw.x = 0;
+				V->screen.xyw.y = 0;
+				V->texture_position.u = 0;
+				V->texture_position.v = 0;
+
+				V++;
+				V->screen.xyw.x = gr_screen.max_w;
+				V->screen.xyw.y = 0;
+				V->texture_position.u = 1;
+				V->texture_position.v = 0;
+
+				V++;
+				V->screen.xyw.x = gr_screen.max_w;
+				V->screen.xyw.y = gr_screen.max_h;
+				V->texture_position.u = 1;
+				V->texture_position.v = 1;
+
+				V++;
+				V->screen.xyw.x = 0;
+				V->screen.xyw.y = gr_screen.max_h;
+				V->texture_position.u = 0;
+				V->texture_position.v = 1;
+
+				auto index_list = new int[] {0, 2, 1, 0, 1, 3};
+
+				gr_update_buffer_data(vertex_stream_buffer, sizeof(*vert_list) * 4, vert_list);
+				gr_update_buffer_data(index_stream_buffer, sizeof(*index_list) * 6, index_list);
+
+				gr_render_depthmarked_primitives(&mat, PRIM_TYPE_TRIS, &vert_def, 4, vertex_stream_buffer, index_stream_buffer);
+
+				delete[] vert_list;
+				delete[] index_list;
+			}
 		}
 	}
 
@@ -1186,10 +1266,6 @@ void model_render_buffers(model_draw_list* scene, model_material *rendering_mate
 			alpha = (interp->get_warp_alpha() != -1.0f) ? interp->get_warp_alpha() : 0.8f;
 			use_blending = true;
 		} else if ( buffer->flags & VB_FLAG_TRANS ) {
-			use_blending = true;
-		}
-
-		if (rendering_material->is_alpha_mult_active()) {
 			use_blending = true;
 		}
 
@@ -2532,10 +2608,11 @@ void model_render_queue(model_render_params* interp, model_draw_list* scene, int
 
 void model_render_queue(model_render_params* interp, model_draw_list* scene, int model_num, int model_instance_num, matrix* orient, vec3d* pos)
 {
+
 	int i;
 
 	const int objnum = interp->get_object_number();
-	const int model_flags = interp->get_model_flags();
+	int model_flags = interp->get_model_flags();
 
 	model_material rendering_material;
 	polymodel *pm = model_get(model_num);
@@ -2549,6 +2626,54 @@ void model_render_queue(model_render_params* interp, model_draw_list* scene, int
 	}
 
 	rendering_material.set_light_factor(light_factor);
+
+	ship* shipp = NULL;
+	object* objp = NULL;
+
+	if (objnum >= 0) {
+		objp = &Objects[objnum];
+		int tentative_num = -1;
+
+		if (objp->type == OBJ_SHIP) {
+			shipp = &Ships[objp->instance];
+			tentative_num = shipp->model_instance_num;
+		}
+		else {
+			tentative_num = object_get_model_instance(objp);
+		}
+
+		if (tentative_num >= 0) {
+			model_instance_num = tentative_num;
+		}
+	}
+
+	if (interp->is_alpha_mult_set() || The_mission.flags[Mission::Mission_Flags::Fadeout_ships]) {
+		float alphamult = 1.0f;
+		if (The_mission.flags[Mission::Mission_Flags::Fadeout_ships] && objp != nullptr) {
+			float dist = vm_vec_dist_quick(&Eye_position, &objp->pos);
+			if (dist > The_mission.fadeout_far) {
+				return; //Exit if model is determined to be fully faded due to distance
+			}
+			else if (dist < The_mission.fadeout_near * 0.9) {
+				rendering_material.reset_alpha_mult();
+			}
+			else {
+				float localMultiplier = 1.0f - ((dist - The_mission.fadeout_near) / (The_mission.fadeout_far - The_mission.fadeout_near));
+				if (localMultiplier > 1)
+					localMultiplier = 1;
+				alphamult *= localMultiplier;
+				rendering_material.set_alpha_mult(alphamult);
+			}
+		}
+
+		if (interp->is_alpha_mult_set()) {
+			alphamult *= interp->get_alpha_mult();
+			rendering_material.set_alpha_mult(alphamult);
+		}
+
+		model_flags |= MR_NO_BATCH;
+
+	}
 
 	if ( interp->is_clip_plane_set() ) {
 		rendering_material.set_clip_plane(interp->get_clip_plane_normal(), interp->get_clip_plane_pos());
@@ -2568,26 +2693,6 @@ void model_render_queue(model_render_params* interp, model_draw_list* scene, int
 
 	if ( !(model_flags & MR_NO_LIGHTING) ) {
 		scene->set_light_filter(objnum, pos, pm->rad);
-	}
-
-	ship *shipp = NULL;
-	object *objp = NULL;
-
-	if (objnum >= 0) {
-		objp = &Objects[objnum];
-		int tentative_num = -1;
-
-		if (objp->type == OBJ_SHIP) {
-			shipp = &Ships[objp->instance];
-			tentative_num = shipp->model_instance_num;
-		}
-		else {
-			tentative_num = object_get_model_instance(objp);
-		}
-
-		if (tentative_num >= 0) {
-			model_instance_num = tentative_num;
-		}
 	}
 
 	// is this a skybox with a rotating submodel?
@@ -2676,18 +2781,6 @@ void model_render_queue(model_render_params* interp, model_draw_list* scene, int
 		rendering_material.set_fog();
 	}
 
-	if (interp->is_alpha_mult_set()/*Is depthfade Mission || renderparam has mult*/) {
-		float alphamult = 1.0f;
-		/*if (is depthfade) {
-			alphamult *= dodepth
-		}*/
-
-		if (interp->is_alpha_mult_set()) {
-			alphamult *= interp->get_alpha_mult();
-		}
-		rendering_material.set_alpha_mult(alphamult);
-	}
-
 	if ( is_outlines_only_htl ) {
 		rendering_material.set_fill_mode(GR_FILL_MODE_WIRE);
 
@@ -2774,7 +2867,7 @@ void model_render_queue(model_render_params* interp, model_draw_list* scene, int
 
 	while( i >= 0 )	{
 		if ( !pm->submodel[i].is_thruster ) {
-			model_render_children_buffers( scene, &rendering_material, interp, pm, pmi, i, detail_level, tmap_flags, trans_buffer );
+			model_render_children_buffers( scene, &rendering_material, interp, pm, pmi, i, detail_level, tmap_flags, trans_buffer);
 		} else {
 			draw_thrusters = true;
 		}

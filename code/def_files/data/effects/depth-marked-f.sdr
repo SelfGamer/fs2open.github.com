@@ -1,0 +1,33 @@
+
+in vec2 fragTexCoord;
+in vec2 fragScreenPosition;
+
+out vec4 fragOut0;
+out vec4 fragOut1;
+out vec4 fragOut2;
+out vec4 fragOut3;
+out vec4 fragOut4;
+
+
+uniform sampler2DArray baseMap;
+
+layout (std140) uniform genericData {
+	mat4 projMatrix;
+
+	bool textured;
+	int baseMapIndex;
+
+	float alpha;
+};
+
+void main() {
+	vec4 color = vec4(1,0,0,255);//texture(baseMap, vec3(fragTexCoord, float(baseMapIndex)));
+
+	//gl_FragDepth = color.a;
+	gl_FragDepth = 0;
+
+	color.a = alpha;
+
+	//fragOut0 = color;
+	fragOut0 = vec4(1,0,0,1);
+}

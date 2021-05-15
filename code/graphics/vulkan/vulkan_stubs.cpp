@@ -203,6 +203,15 @@ void stub_render_rocket_primitives(interface_material* /*material_info*/,
 {
 }
 
+void stub_render_depthmarked_primitives(depth_marked_image_material* /*material_info*/,
+	primitive_type /*prim_type*/,
+	vertex_layout* /*layout*/,
+	int /*n_indices*/,
+	gr_buffer_handle /*vertex_buffer*/,
+	gr_buffer_handle /*index_buffer*/)
+{
+}
+
 bool stub_is_capable(gr_capability /*capability*/) { return false; }
 bool stub_get_property(gr_property p, void* dest)
 {
@@ -324,6 +333,7 @@ void init_stub_pointers()
 	gr_screen.gf_render_nanovg = stub_render_nanovg;
 	gr_screen.gf_render_primitives_batched = stub_render_primitives_batched;
 	gr_screen.gf_render_rocket_primitives = stub_render_rocket_primitives;
+	gr_screen.gf_render_depthmarked_primitives = stub_render_depthmarked_primitives;
 
 	gr_screen.gf_is_capable = stub_is_capable;
 	gr_screen.gf_get_property = stub_get_property;

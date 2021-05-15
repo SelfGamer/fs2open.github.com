@@ -898,6 +898,7 @@ void opengl_setup_function_pointers()
 	gr_screen.gf_render_nanovg = gr_opengl_render_nanovg;
 	gr_screen.gf_render_decals = gr_opengl_render_decals;
 	gr_screen.gf_render_rocket_primitives     = gr_opengl_render_rocket_primitives;
+	gr_screen.gf_render_depthmarked_primitives = gr_opengl_render_depthmarked_primitives;
 
 	gr_screen.gf_is_capable = gr_opengl_is_capable;
 	gr_screen.gf_get_property = gr_opengl_get_property;

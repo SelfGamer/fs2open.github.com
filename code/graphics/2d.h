@@ -87,6 +87,7 @@ class batched_bitmap_material;
 class nanovg_material;
 class decal_material;
 class interface_material;
+class depth_marked_image_material;
 
 class transform_stack {
 
@@ -199,6 +200,7 @@ enum shader_type {
 	SDR_TYPE_DECAL,
 	SDR_TYPE_SCENE_FOG,
 	SDR_TYPE_ROCKET_UI,
+	SDR_TYPE_DEPTH_MARKED,
 
 	SDR_TYPE_POST_PROCESS_SMAA_EDGE,
 	SDR_TYPE_POST_PROCESS_SMAA_BLENDING_WEIGHT,
@@ -880,6 +882,12 @@ typedef struct screen {
 		int n_indices,
 		gr_buffer_handle vertex_buffer,
 		gr_buffer_handle index_buffer);
+	void (*gf_render_depthmarked_primitives)(depth_marked_image_material* material_info,
+		primitive_type prim_type,
+		vertex_layout* layout,
+		int n_indices,
+		gr_buffer_handle vertex_buffer,
+		gr_buffer_handle index_buffer);
 
 	std::function<bool(gr_capability capability)> gf_is_capable;
 	std::function<bool(gr_property property, void* destination)> gf_get_property;
@@ -1178,6 +1186,16 @@ inline void gr_render_rocket_primitives(interface_material* material_info,
 	gr_buffer_handle index_buffer)
 {
 	gr_screen.gf_render_rocket_primitives(material_info, prim_type, layout, n_indices, vertex_buffer, index_buffer);
+}
+
+inline void gr_render_depthmarked_primitives(depth_marked_image_material* material_info,
+	primitive_type prim_type,
+	vertex_layout* layout,
+	int n_indices,
+	gr_buffer_handle vertex_buffer,
+	gr_buffer_handle index_buffer)
+{
+	gr_screen.gf_render_depthmarked_primitives(material_info, prim_type, layout, n_indices, vertex_buffer, index_buffer);
 }
 
 inline bool gr_is_capable(gr_capability capability)

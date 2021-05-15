@@ -938,6 +938,19 @@ interface_material::interface_material()
 	offset.x = 0;
 	offset.y = 0;
 }
+
+depth_marked_image_material::depth_marked_image_material() {
+	set_shader_type(SDR_TYPE_DEPTH_MARKED);
+}
+
+void depth_marked_image_material::set_alpha(float alpha) {
+	this->alpha = alpha;
+}
+
+float depth_marked_image_material::get_alpha() const {
+	return alpha;
+}
+
 void interface_material::set_offset(const vec2d& new_offset) { this->offset = new_offset; }
 vec2d interface_material::get_offset() const { return offset; }
 void interface_material::set_horizontal_swipe(float hor_offset) { this->horizontalSwipeOff = hor_offset; }

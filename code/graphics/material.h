@@ -356,6 +356,15 @@ class interface_material : public material {
 	float get_horizontal_swipe() const;
 };
 
+class depth_marked_image_material : public material {
+	float alpha = 1.0f;
+public:
+	depth_marked_image_material();
+
+	void set_alpha(float alpha);
+	float get_alpha() const;
+};
+
 gr_alpha_blend material_determine_blend_mode(int base_bitmap, bool is_transparent);
 
 gr_zbuffer_type material_determine_depth_mode(bool depth_testing, bool is_transparent);

@@ -880,6 +880,28 @@ void gr_opengl_render_rocket_primitives(interface_material* material_info,
 	gr_end_2d_matrix();
 }
 
+void gr_opengl_render_depthmarked_primitives(depth_marked_image_material* material_info,
+	primitive_type prim_type,
+	vertex_layout* layout,
+	int n_indices,
+	gr_buffer_handle vertex_buffer,
+	gr_buffer_handle index_buffer)
+{
+	GR_DEBUG_SCOPE("Render depthmarked primitives");
+
+	gr_set_2d_matrix();
+
+	opengl_tnl_set_depthmarked_material(material_info);
+
+	opengl_bind_vertex_layout(*layout,
+		opengl_buffer_get_id(GL_ARRAY_BUFFER, vertex_buffer),
+		opengl_buffer_get_id(GL_ELEMENT_ARRAY_BUFFER, index_buffer));
+
+	glDrawElements(opengl_primitive_type(prim_type), n_indices, GL_UNSIGNED_INT, nullptr);
+
+	gr_end_2d_matrix();
+}
+
 void opengl_draw_textured_quad(GLfloat x1,
 							   GLfloat y1,
 							   GLfloat u1,

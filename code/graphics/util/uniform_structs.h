@@ -145,8 +145,6 @@ struct model_uniform_data {
 	int sNormalmapIndex;
 	int sAmbientmapIndex;
 	int sMiscmapIndex;
-
-	float alphaMult;
 };
 
 enum class NanoVGShaderType: int32_t {
@@ -261,6 +259,15 @@ struct rocketui_data {
 	float horizontalSwipeOffset;
 
 	float pad[3];
+};
+
+struct depthmarked_data {
+	matrix4 projMatrix;
+
+	int textured;
+	int baseMapIndex;
+
+	float alpha;
 };
 
 struct lightshaft_data {

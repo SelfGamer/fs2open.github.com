@@ -1878,6 +1878,73 @@ int opengl_make_render_target( int handle, int *w, int *h, int *bpp, int *mm_lvl
 	return 1;
 }
 
+/*int opengl_attach_depth_buffer(int renderTexture, int depthTexture, int *w, int *h) {
+	auto render = bm_get_gr_info<tcache_slot_opengl>(renderTexture);
+	auto depth = bm_get_gr_info<tcache_slot_opengl>(depthTexture);
+	// now on to the good parts...
+
+	fbo_t* fbo = opengl_get_fbo(render->fbo_id);
+
+	// initialize depth texture
+	glGenTextures(1, &depth->texture_id);
+
+	GL_state.Texture.SetActiveUnit(0);
+	GL_state.Texture.SetTarget(GL_texture_target);
+	GL_state.Texture.Enable(depth->texture_id);
+
+	glTexParameteri(GL_texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	depth->mipmap_levels = 1;
+
+	// Initialize the texture storage of the framebuffer. Framebuffers always have only a single layer in the texture array
+	// This automatically handles cubemaps correctly
+	opengl_tex_array_storage(GL_state.Texture.GetTarget(), depth->mipmap_levels, GL_RGBA8, render->w, render->h, 1);
+
+	glTexParameteri(GL_texture_target, GL_TEXTURE_MAX_LEVEL, depth->mipmap_levels - 1);
+
+	GL_state.Texture.Enable(0);
+
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	// frame buffer
+	GL_state.BindFrameBuffer(fbo->framebuffer_id);
+
+	glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth->texture_id, 0, 0);
+
+	// save anything that needs saving, cleanup, and then exit
+	depth->w = render->w;
+	depth->h = (ushort)*h;
+	depth->bpp = 24;
+	depth->texture_target = GL_state.Texture.GetTarget();
+	depth->bitmap_handle = -1;//handle;
+	depth->u_scale = 1.0f;
+	depth->v_scale = 1.0f;
+	depth->used = true;
+	depth->array_index = 0;
+
+	new_fbo->width = ts->w;
+	new_fbo->height = ts->h;
+
+	if (bpp) {
+		*bpp = ts->bpp;
+	}
+
+	if (mm_lvl) {
+		*mm_lvl = ts->mipmap_levels;
+	}
+
+	// Clear the new Texture to black with alpha 1.0
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	GL_state.BindFrameBuffer(0);
+
+	opengl_set_texture_target();
+}*/
+
 /**
  * @fn	GLuint opengl_get_rtt_framebuffer()
  *

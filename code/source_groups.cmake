@@ -224,6 +224,8 @@ add_file_folder("Default files\\\\data\\\\effects"
 	def_files/data/effects/deferred-clear-v.sdr
 	def_files/data/effects/deferred-f.sdr
 	def_files/data/effects/deferred-v.sdr
+	def_files/data/effects/depth-marked-f.sdr
+	def_files/data/effects/depth-marked-v.sdr
 	def_files/data/effects/effect-distort-f.sdr
 	def_files/data/effects/effect-distort-v.sdr
 	def_files/data/effects/effect-f.sdr

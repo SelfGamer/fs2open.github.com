@@ -103,8 +103,6 @@ layout (std140) uniform modelData {
 	int sNormalmapIndex;
 	int sAmbientmapIndex;
 	int sMiscmapIndex;
-
-	float alphaMult;
 };
 
 in VertexOutput {
