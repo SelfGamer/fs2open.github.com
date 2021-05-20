@@ -5052,6 +5052,16 @@ static void parse_ship_values(ship_info* sip, const bool is_template, const bool
 							stuff_int(&current_trigger->end );
 						else
 							current_trigger->end = 0;
+
+						if (optional_string("+loops_with_delay:")) {
+							stuff_int(&current_trigger->loop_wait_time);
+							current_trigger->loops = true;
+						}
+						else {
+							current_trigger->loop_wait_time = 0;
+							current_trigger->loops = false;
+						}
+
 					}else{
 
 						if(optional_string("+delay:"))
@@ -5102,6 +5112,15 @@ static void parse_ship_values(ship_info* sip, const bool is_template, const bool
 							stuff_int(&current_trigger->end );
 						else
 							current_trigger->end = 0;
+
+						if (optional_string("+loops_with_delay:")) {
+							stuff_int(&current_trigger->loop_wait_time);
+							current_trigger->loops = true;
+						}
+						else {
+							current_trigger->loop_wait_time = 0;
+							current_trigger->loops = false;
+						}
 
 						if(optional_string("$Sound:")){
 							parse_game_sound("+Start:", &current_trigger->start_sound);
@@ -18067,8 +18086,32 @@ void ship_do_submodel_rotation(ship *shipp, model_subsystem *psub, ship_subsys *
 	}
 
 	if (psub->flags[Model::Subsystem_Flags::Triggered] && pss->triggered_rotation_index >= 0) {
-		Triggered_rotations[pss->triggered_rotation_index].process_queue();
+		triggered_rotation* rotation = &Triggered_rotations[pss->triggered_rotation_index];
+		rotation->process_queue();
+
+		bool did_stop = rotation->has_started;
+
 		model_anim_submodel_trigger_rotate(psub, pss );
+
+		did_stop &= !rotation->has_started;
+
+		//Check if the rotation came from a looping source
+		if (rotation->looping_source != nullptr) {
+			if (rotation->wait_remaining > 0) {
+				rotation->wait_remaining -= flFrametime;
+
+				//Check if we've waited enough
+				if (!(rotation->wait_remaining > 0)) {
+					rotation->add_queue(rotation->looping_source, rotation->lastDir == -1 ? 1 : -1);
+				}
+			}
+			
+			//Check if we stopped this frame and need to start waiting
+			if (did_stop) {
+				rotation->wait_remaining = rotation->looping_source->loop_wait_time * 0.001f;
+			}
+		}
+
 		return;
 	
 	}

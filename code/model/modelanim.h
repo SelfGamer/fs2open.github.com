@@ -73,6 +73,8 @@ struct queued_animation {
 	int subtype;
 	int instance;
 	int real_end_time;
+	bool loops;
+	int loop_wait_time;
 
 	gamesnd_id start_sound;
 	gamesnd_id loop_sound;
@@ -137,6 +139,10 @@ class triggered_rotation
 		bool has_started;	// animation has started playing
 		int end_time;		// time that we should stop
 		int start_time;		// the time the current animation started
+
+		queued_animation* looping_source;
+		float wait_remaining;
+		int lastDir;
 };
 
 extern SCP_vector<triggered_rotation> Triggered_rotations;

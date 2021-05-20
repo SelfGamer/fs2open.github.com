@@ -223,6 +223,11 @@ void triggered_rotation::add_queue(queued_animation *the_queue, int dir)
 		vm_vec_negate( &new_queue.angle );
 	}
 
+	if (the_queue->loops) {
+		looping_source = the_queue;
+		this->lastDir = dir;
+	}
+
 	memcpy(queue_tmp, queue, sizeof(queued_animation) * MAX_TRIGGERED_ANIMATIONS);
 
 	if (n_queue > 0) {
